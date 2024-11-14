@@ -1,11 +1,13 @@
 package routes
 
 import (
+	"Expense-Tracker-go/controllers"
 	"github.com/gin-gonic/gin"
 )
 
-func userRoutes(r *gin.RouterGroup) {
-	r.POST("/login", login)
-	r.POST("/signup", signup)
+func UserRoutes(r *gin.RouterGroup) {
+
+	r.POST("/login", controllers.Login)
+	r.POST("/signup", controllers.SignUp)
 
 }

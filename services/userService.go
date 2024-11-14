@@ -6,42 +6,25 @@ import (
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 )
 
-func SaveUser(username, password string) error {
-
-	hashedPassword, err := utils.HashPassword(password)
-	if err != nil {
-		log.Println("Error hashing password:", err)
-		return err
-
-	}
-
-	user := models.User{
-		Username: username,
-		Password: hashedPassword,
-	}
+func GetUserByUsername(username string) (*models.User, error) {
 
 	collection := utils.Client.Database("ExpenseTracker").Collection("Users")
 
-	var existingUser models.User
-	err = collection.FindOne(context.Background(), bson.M{"username": user.Username}).Decode(&existingUser)
-	if err == nil {
-		// If the user already exists
-		return errors.New("user already exists")
-	} else if err.Error() != "mongo: no documents in result" {
-		// Log unexpected errors
-		log.Println("Error checking for existing user:", err)
-		return err
-	}
+	var user models.User
 
-	_, err = collection.InsertOne(context.Background(), user)
+	err := collection.FindOne(context.Background(), bson.M{"username": username}).Decode(&user)
 	if err != nil {
-		log.Println("Error inserting User:", err)
-		return err
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, errors.New("user not found")
+		}
+		log.Println("Error finding user:", err)
+		return nil, err
 	}
 
-	log.Println("User Created Successfully")
-	return nil
+	return &user, nil
+
 }
