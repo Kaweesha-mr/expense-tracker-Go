@@ -31,7 +31,7 @@ func ConnectDB() error {
 
 	//after connection setted up this is to test that connection
 	if err = Client.Ping(context.Background(), nil); err != nil {
-		return fmt.Errorf("Mongodb Connection Failed: %v", err)
+		return fmt.Errorf("mongodb Connection Failed: %v", err)
 	}
 
 	log.Printf("Successfully connected to Mongodb")
