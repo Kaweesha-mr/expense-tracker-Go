@@ -3,6 +3,7 @@ package controllers
 import (
 	"Expense-Tracker-go/models"
 	"Expense-Tracker-go/services"
+	"Expense-Tracker-go/utils"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -56,20 +57,19 @@ func AddTransaction(c *gin.Context) {
 
 func GetAllTransactions(c *gin.Context) {
 
-	ctx := c.Request.Context()
-
 	User, exists := c.Get("userName")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": "User Claims Not Found"})
+
+		utils.RespondWithError(c, http.StatusInternalServerError, "User Claims Not Found")
 		return
 	}
 
-	transactions, err := services.GetAllTransactions(ctx, User.(string))
+	transactions, err := services.GetAllTransactions(c, User.(string))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"Error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"Transactions": transactions})
+	utils.RespondWithJSON(c, http.StatusOK, transactions)
 
 }
