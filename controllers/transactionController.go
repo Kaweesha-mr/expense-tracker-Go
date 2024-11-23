@@ -53,3 +53,23 @@ func AddTransaction(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"Object Id": result})
 
 }
+
+func GetAllTransactions(c *gin.Context) {
+
+	ctx := c.Request.Context()
+
+	User, exists := c.Get("userName")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "User Claims Not Found"})
+		return
+	}
+
+	transactions, err := services.GetAllTransactions(ctx, User.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"Transactions": transactions})
+
+}
