@@ -4,6 +4,7 @@ import (
 	"Expense-Tracker-go/models"
 	"Expense-Tracker-go/services"
 	"Expense-Tracker-go/utils"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -60,6 +61,8 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
 		return
 	}
+
+	fmt.Println(user.Username)
 
 	// Generate access and refresh tokens
 	accessToken, err := utils.GenerateAccessToken(user.Username)
