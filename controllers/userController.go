@@ -47,6 +47,7 @@ func Login(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Binding Error", "Details": err.Error()})
+		return
 	}
 
 	storedUser, err := services.GetUserByUsername(user.Username)

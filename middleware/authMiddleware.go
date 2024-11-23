@@ -9,7 +9,7 @@ import (
 
 type contextKey string
 
-const userClaimsKey = contextKey("userClaims")
+const UserClaimsKey = contextKey("userClaims")
 
 func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +36,7 @@ func authMiddleware(next http.Handler) http.Handler {
 		}
 
 		//add claims to the request context
-		ctx := context.WithValue(r.Context(), userClaimsKey, info)
+		ctx := context.WithValue(r.Context(), UserClaimsKey, info)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 
