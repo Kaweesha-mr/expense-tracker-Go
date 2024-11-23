@@ -2,27 +2,29 @@ package middleware
 
 import (
 	"Expense-Tracker-go/utils"
-	"context"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
 )
 
 type contextKey string
 
-const UserClaimsKey = contextKey("userClaims")
+const UserClaimsKey = contextKey("userName")
 
-func authMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
 
 		//Get the authorization header
-		authHeader := r.Header.Get("Authorization")
+		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			http.Error(w, "Authorization header missing", http.StatusUnauthorized)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
+			c.Abort() // Stop further execution
 			return
 		}
 
 		if !strings.HasPrefix(authHeader, "Bearer ") {
-			http.Error(w, "Invalid Authorization header format", http.StatusUnauthorized)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
+			c.Abort()
 			return
 		}
 
@@ -31,14 +33,16 @@ func authMiddleware(next http.Handler) http.Handler {
 		info, err := utils.ValidateToken(tokenString)
 
 		if err != nil {
-			http.Error(w, "Invalid or Expired token", http.StatusUnauthorized)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or Expired token"})
+			c.Abort()
 			return
 		}
 
 		//add claims to the request context
-		ctx := context.WithValue(r.Context(), UserClaimsKey, info)
+		c.Set(string(UserClaimsKey), info.Username)
 
-		next.ServeHTTP(w, r.WithContext(ctx))
+		c.Next()
 
-	})
+	}
+
 }

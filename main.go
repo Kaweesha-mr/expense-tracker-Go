@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Expense-Tracker-go/middleware"
 	"Expense-Tracker-go/routes"
 	"Expense-Tracker-go/utils"
 	"github.com/gin-gonic/gin"
@@ -19,9 +20,16 @@ func main() {
 	router := gin.Default()
 
 	//route registering
-	api := router.Group("/api/v1")
+	api := router.Group("/api/v1/public")
 	{
 		routes.UserRoutes(api)
+	}
+
+	ProtectedRoutes := router.Group("/api/v1/protected")
+	ProtectedRoutes.Use(middleware.AuthMiddleware())
+	{
+		routes.TransactionRoutes(ProtectedRoutes)
+
 	}
 
 	// Step 4: Start the server
