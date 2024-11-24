@@ -2,20 +2,17 @@ package services
 
 import (
 	"Expense-Tracker-go/models"
-	"Expense-Tracker-go/utils"
+	"Expense-Tracker-go/repository"
 	"context"
 	"fmt"
 	"github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 )
 
 func AddTransaction(ctx context.Context, transaction models.Transaction) (interface{}, error) {
 
-	collection := utils.Client.Database("ExpenseTracker").Collection("Transaction")
-
-	result, err := collection.InsertOne(ctx, transaction)
+	result, err := repository.AddTransaction(ctx, transaction)
 
 	if err != nil {
 		log.Printf("Inserting Error", err)
@@ -27,17 +24,13 @@ func AddTransaction(ctx context.Context, transaction models.Transaction) (interf
 }
 
 func GetAllTransactions(ctx context.Context, user string) ([]models.Transaction, error) {
-	collection := utils.Client.Database("ExpenseTracker").Collection("Transaction")
 
-	filter := bson.M{"username": user}
-
-	cursor, err := collection.Find(ctx, filter)
+	cursor, err := repository.FindTransactionsByUser(ctx, user)
 	if err != nil {
 
 		logrus.WithFields(logrus.Fields{
-			"user":   user,
-			"filter": filter,
-			"error":  err,
+			"user":  user,
+			"error": err,
 		}).Error("Failed with transactions")
 
 		return nil, err
