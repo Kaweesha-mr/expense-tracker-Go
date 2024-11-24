@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -162,6 +163,38 @@ func GetTransactionById(ctx context.Context, obj interface{}) (models.Transactio
 	}
 
 	if err := result.Decode(&transaction); err != nil {
+		log.Printf("Error decoding transaction: %v", err)
+		return transaction, fmt.Errorf("failed to decode transaction")
+	}
+
+	return transaction, nil
+}
+
+func UpdateTransaction(ctx context.Context, id primitive.ObjectID, transaction models.Transaction) (models.Transaction, error) {
+	// Prepare the update data
+	updateData := bson.M{
+		"amount":      transaction.Amount,
+		"description": transaction.Description,
+	}
+
+	// Call the repository function
+	result, err := repository.UpdateTransactionById(ctx, id, updateData)
+	if err != nil {
+		return models.Transaction{}, err
+	}
+
+	// Check if any document was matched
+	if result.MatchedCount == 0 {
+		return models.Transaction{}, fmt.Errorf("transaction not found")
+	}
+
+	// Fetch the updated transaction (optional, if needed for response)
+	updatedTransaction, err := repository.FindTransactionById(ctx, id)
+	if err != nil {
+		return models.Transaction{}, fmt.Errorf("failed to retrieve updated transaction: %w", err)
+	}
+
+	if err := updatedTransaction.Decode(&transaction); err != nil {
 		log.Printf("Error decoding transaction: %v", err)
 		return transaction, fmt.Errorf("failed to decode transaction")
 	}

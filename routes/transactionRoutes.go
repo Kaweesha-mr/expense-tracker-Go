@@ -10,7 +10,7 @@ func TransactionRoutes(r *gin.RouterGroup) {
 	r.GET("/latest", controllers.Get4Transaction)
 	r.GET("/:id", controllers.GetTransactionId)
 	r.POST("/", controllers.AddTransaction)
-	//r.PUT("/:id", updateTransaction)
+	r.PUT("/:id", controllers.UpdateTransaction)
 	//r.GET("/sumIncome", getSumOfIncomeTransactionsByUserId)
 	//r.GET("/sumExpense", getSumOfExpenseTransactionsByUserId)
 	//r.DELETE("/:id", deleteTransactions)

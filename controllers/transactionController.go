@@ -124,3 +124,42 @@ func GetTransactionId(c *gin.Context) {
 		"transaction": transaction,
 	})
 }
+
+func UpdateTransaction(c *gin.Context) {
+	// Step 1: Extract the transaction ID from the path parameter
+	objectId := c.Param("id")
+	id, err := primitive.ObjectIDFromHex(objectId)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, "Invalid Transaction ID format")
+		return
+	}
+
+	// Step 2: Bind the request body to a Transaction struct
+	var transaction models.Transaction
+	if err := c.ShouldBindJSON(&transaction); err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Step 3: Extract user claims (e.g., userName) from the context
+	user, exists := c.Get("userName")
+	if !exists {
+		utils.RespondWithError(c, http.StatusUnauthorized, "User claims not found")
+		return
+	}
+	transaction.UserName = user.(string) // Ensure the user is attached to the update
+
+	// Step 4: Call the service layer to update the transaction
+	updatedTransaction, err := services.UpdateTransaction(c.Request.Context(), id, transaction)
+	if err != nil {
+		if err.Error() == "transaction not found" {
+			utils.RespondWithError(c, http.StatusNotFound, "Transaction not found")
+			return
+		}
+		utils.RespondWithError(c, http.StatusInternalServerError, "Failed to update transaction")
+		return
+	}
+
+	// Step 5: Respond with the updated transaction
+	utils.RespondWithJSON(c, http.StatusOK, updatedTransaction)
+}
