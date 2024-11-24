@@ -7,7 +7,7 @@ import (
 
 func TransactionRoutes(r *gin.RouterGroup) {
 	r.GET("/", controllers.GetAllTransactions)
-	//r.GET("/latest", get4Transaction)
+	r.GET("/latest", controllers.Get4Transaction)
 	//r.GET("/one/:id", getTransactionId)
 	r.POST("/", controllers.AddTransaction)
 	//r.PUT("/:id", updateTransaction)

@@ -73,3 +73,22 @@ func GetAllTransactions(c *gin.Context) {
 	utils.RespondWithJSON(c, http.StatusOK, transactions)
 
 }
+
+func Get4Transaction(c *gin.Context) {
+
+	User, exists := c.Get("userName")
+	if !exists {
+
+		utils.RespondWithError(c, http.StatusInternalServerError, "User Claims Not Found")
+		return
+	}
+
+	transactions, err := services.Get4Transactions(c, User.(string))
+	if err != nil {
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(c, http.StatusOK, transactions)
+
+}
