@@ -52,3 +52,19 @@ func UpdateTransactionById(ctx context.Context, id primitive.ObjectID, data bson
 	// Step 4: Return the UpdateResult
 	return result, nil
 }
+
+func DeleteTransactionById(ctx context.Context, filter bson.M) (*mongo.DeleteResult, error) {
+	// Step 1: Get the collection
+	collection := utils.Client.Database("ExpenseTracker").Collection("Transaction")
+
+	// Step 2: Execute the DeleteOne query
+	deleteResult, err := collection.DeleteOne(ctx, filter)
+
+	// Step 3: Handle errors and return the result
+	if err != nil {
+		return nil, fmt.Errorf("failed to delete transaction: %w", err)
+	}
+
+	// Step 4: Return the DeleteResult
+	return deleteResult, nil
+}

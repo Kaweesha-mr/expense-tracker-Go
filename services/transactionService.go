@@ -201,3 +201,22 @@ func UpdateTransaction(ctx context.Context, id primitive.ObjectID, transaction m
 
 	return transaction, nil
 }
+
+func DeleteTransaction(ctx context.Context, id primitive.ObjectID, username string) error {
+
+	filter := bson.M{
+		"_id":      id,
+		"username": username, // Ensure the transaction belongs to the user
+	}
+
+	deleteResult, err := repository.DeleteTransactionById(ctx, filter)
+	if err != nil {
+		return fmt.Errorf("failed to delete transaction: %w", err)
+	}
+
+	if deleteResult.DeletedCount == 0 {
+		return fmt.Errorf("transaction not found")
+	}
+
+	return nil
+}
