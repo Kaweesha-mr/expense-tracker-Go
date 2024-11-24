@@ -12,8 +12,6 @@ import (
 
 func AddTransaction(c *gin.Context) {
 
-	ctx := c.Request.Context()
-
 	User, exists := c.Get("userName")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "User Claims Not Found"})
@@ -46,7 +44,7 @@ func AddTransaction(c *gin.Context) {
 		return
 	}
 
-	result, err := services.AddTransaction(ctx, Transaction)
+	result, err := services.AddTransaction(c.Request.Context(), Transaction)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Error": "DB Error", "Details": err.Error()})
 	}
@@ -64,7 +62,7 @@ func GetAllTransactions(c *gin.Context) {
 		return
 	}
 
-	transactions, err := services.GetAllTransactions(c, User.(string))
+	transactions, err := services.GetAllTransactions(c.Request.Context(), User.(string))
 	if err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
 		return

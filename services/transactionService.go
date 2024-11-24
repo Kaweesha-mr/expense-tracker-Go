@@ -5,7 +5,6 @@ import (
 	"Expense-Tracker-go/repository"
 	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -89,13 +88,13 @@ func GetAllTransactions(ctx context.Context, user string) ([]models.Transaction,
 	return transactions, nil
 }
 
-func Get4Transactions(c *gin.Context, user string) ([]models.Transaction, error) {
+func Get4Transactions(c context.Context, user string) ([]models.Transaction, error) {
 	// Prepare query options
 	opt := options.Find()
 	opt.SetLimit(4)
 
 	// Fetch transactions using the repository
-	cursor, err := repository.FindLatestTransactionsByUser(c.Request.Context(), user, opt)
+	cursor, err := repository.FindLatestTransactionsByUser(c, user, opt)
 	if err != nil {
 		logrus.WithField("user", user).WithError(err).Error("Failed to fetch transactions")
 		return nil, err
@@ -103,7 +102,7 @@ func Get4Transactions(c *gin.Context, user string) ([]models.Transaction, error)
 
 	// Ensure the cursor is closed
 	defer func() {
-		if err := cursor.Close(c.Request.Context()); err != nil {
+		if err := cursor.Close(c); err != nil {
 			logrus.WithError(err).Error("Failed to close the MongoDB cursor")
 		}
 	}()
@@ -111,7 +110,7 @@ func Get4Transactions(c *gin.Context, user string) ([]models.Transaction, error)
 	var transactions []models.Transaction
 
 	// Decode transactions
-	for cursor.Next(c.Request.Context()) {
+	for cursor.Next(c) {
 		var transaction models.Transaction
 		if err := cursor.Decode(&transaction); err != nil {
 			logrus.WithField("user", user).WithError(err).Error("Failed to decode transaction")
