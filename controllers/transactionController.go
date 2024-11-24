@@ -7,6 +7,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
 
@@ -89,4 +90,37 @@ func Get4Transaction(c *gin.Context) {
 
 	utils.RespondWithJSON(c, http.StatusOK, transactions)
 
+}
+
+func GetTransactionId(c *gin.Context) {
+
+	objectId := c.Param("id")
+
+	id, err := primitive.ObjectIDFromHex(objectId)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, "Invalid Transaction ID format")
+		return
+	}
+
+	User, exists := c.Get("userName")
+	if !exists {
+		utils.RespondWithError(c, http.StatusUnauthorized, "User Claims Not Found")
+		return
+	}
+
+	transaction, err := services.GetTransactionById(c.Request.Context(), id)
+	if err != nil {
+		if err.Error() == "transaction not found" {
+			utils.RespondWithError(c, http.StatusNotFound, "Transaction not found")
+			return
+		}
+		utils.RespondWithError(c, http.StatusInternalServerError, "Error fetching transaction data")
+		return
+	}
+
+	// Step 5: Return the transaction data as a JSON response
+	utils.RespondWithJSON(c, http.StatusOK, gin.H{
+		"user":        User,
+		"transaction": transaction,
+	})
 }

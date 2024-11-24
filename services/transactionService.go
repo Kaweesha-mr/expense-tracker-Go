@@ -4,8 +4,10 @@ import (
 	"Expense-Tracker-go/models"
 	"Expense-Tracker-go/repository"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
@@ -138,4 +140,31 @@ func Get4Transactions(c context.Context, user string) ([]models.Transaction, err
 	}).Info("Successfully fetched transactions")
 
 	return transactions, err
+}
+
+func GetTransactionById(ctx context.Context, obj interface{}) (models.Transaction, error) {
+	var transaction models.Transaction
+
+	//  Validate the input object ID
+	objectID, ok := obj.(primitive.ObjectID)
+	if !ok {
+		return transaction, fmt.Errorf("invalid ObjectID format")
+	}
+
+	result, err := repository.FindTransactionById(ctx, objectID)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return transaction, fmt.Errorf("transaction not found")
+		}
+		// Log the error and return
+		log.Printf("Error retrieving transaction by ID: %v", err)
+		return transaction, fmt.Errorf("internal server error")
+	}
+
+	if err := result.Decode(&transaction); err != nil {
+		log.Printf("Error decoding transaction: %v", err)
+		return transaction, fmt.Errorf("failed to decode transaction")
+	}
+
+	return transaction, nil
 }
