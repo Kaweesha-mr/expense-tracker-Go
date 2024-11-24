@@ -8,14 +8,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+var collection = utils.Client.Database("ExpenseTracker").Collection("Transaction")
+
 func FindTransactionsByUser(ctx context.Context, user string) (*mongo.Cursor, error) {
-	collection := utils.Client.Database("ExpenseTracker").Collection("Transaction")
 	filter := bson.M{"username": user}
 	return collection.Find(ctx, filter)
 }
 
 func AddTransaction(ctx context.Context, transaction models.Transaction) (*mongo.InsertOneResult, error) {
-	collection := utils.Client.Database("ExpenseTracker").Collection("Transaction")
 	return collection.InsertOne(ctx, transaction)
 
 }
